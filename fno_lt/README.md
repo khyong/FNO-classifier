@@ -2,7 +2,7 @@
 
 This directory is the official implementation of the part of Imbalanced Learning in Fixed Non-negative Orthogonal Classifier: Inducing Zero-mean Neural Collapse with Feature Dimension Separation.
 
-<img src="../figures/fno_imb.jpg" alt="FNO Imb">
+<img src="../figures/fno_lt.jpg" alt="FNO LT">
 
 ## Experimental Details
 
