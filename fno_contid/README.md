@@ -2,7 +2,7 @@
 
 This directory is the official implementation of the par of Continual Learning in Fixed Non-negative Orthogonal Classifier: Inducing Zero-mean Neural Collapse with Feature Dimension Separation.
 
-<img src="figures/fno_contid.jpg" alt="FNO Contid">
+<img src="../figures/fno_contid.jpg" alt="FNO Contid">
 
 ## Experimental Details
 

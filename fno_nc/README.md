@@ -2,7 +2,7 @@
 
 This directory is the official implementation of the part of Neural Collapse Experiments in Fixed Non-negative Orthogonal Classifier: Inducing Zero-mean Neural Collapse with Feature Dimension Separation.
 
-<img src="figures/fno_nc.jpg" alt="FNO NC">
+<img src="../figures/fno_nc.jpg" alt="FNO NC">
 
 ## Experimental Details
 
