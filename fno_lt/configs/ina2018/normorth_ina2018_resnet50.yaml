@@ -1,0 +1,83 @@
+name: 'NormOrthArcMixupClsFeatMaskLog.iNa2018.ResNet50'
+output_dir: './output/ina2018'
+valid_step: 1
+save_step: -1
+show_step: 500
+input_size: (224, 224)
+color_space: 'RGB'
+cpu_mode: False
+seed_num: 0
+ddp: False
+dp: True
+mixed_precision: True
+
+dataset:
+    root: '/home/anonymous/datasets/iNaturalist2018/images'
+    dataset: 'iNa2018'
+    type: 'imbalanced'
+    num_classes: 8142
+    data_type: 'jpg'
+    train_info: '/home/anonymous/datasets/data_txt/iNaturalist18_train.txt'
+    valid_info: '/home/anonymous/datasets/data_txt/iNaturalist18_val.txt'
+    class_index:
+        many: [0, 842]
+        med: [842, 4543]
+        few: [4543, 8142]
+
+backbone:
+    type: 'resnet50_z'
+
+pooling:
+    type: 'GlobalAvgPooling'
+
+reshape:
+    type: 'FlattenCustom'
+
+classifier:
+    type: 'OrthLinear'
+    bias: False
+
+scaling:
+    type: 'Identity'
+
+loss:
+    loss_type: 'LogLoss'
+
+train:
+    batch_size: 256
+    num_epochs: 200
+    num_workers: 16
+    trainer:
+        type: 'mask'
+        mixup_alpha: 0.2
+    optimizer:
+        type: 'SGD'
+        base_lr: 0.1
+        weight_decay: 1e-4
+        momentum: 0.9
+    lr_scheduler:
+        type: 'cosine'
+        eta_min: 0.
+    tensorboard:
+        enable: True
+
+transforms:
+    train_transforms: ('random_resized_crop', 'random_horizontal_flip', 'color_jitter', 'normalize')
+    test_transforms: ('resize', 'center_crop', 'normalize',)
+    process_detail:
+        resize: 256
+        crop_size: 224
+        color_jitter:
+            brightness: 0.4
+            contrast: 0.4
+            saturation: 0.4
+            hue: 0.
+        normalize:
+            mean: [0.466, 0.471, 0.380]
+            std: [0.195, 0.194, 0.192]
+
+test:
+    batch_size: 256
+    num_workers: 16
+    model_file: 'best_model.pth'
+

@@ -1,0 +1,84 @@
+name: 'MiSLAS.IMBALANCECIFAR10.ResNet32.200epoch'
+output_dir: './output/imbalancecifar10'
+valid_step: 1
+save_step: -1
+show_step: 100
+input_size: (32, 32)
+color_space: 'RGB'
+cpu_mode: False
+ddp: True
+port: 12355
+seed_num: 0
+
+dataset:
+    root: '/data/anonymous'
+    dataset: 'IMBALANCECIFAR10'
+    type: 'imbalanced'
+    num_classes: 10
+    imbalancecifar:
+        ratio: 0.01
+    class_index:
+        many: [0, 3]
+        med: [3, 7]
+        few: [7, 10]
+
+backbone:
+    type: 'resnetcifar32_z'
+    in_channels: 16
+
+pooling:
+    type: 'GlobalAvgPooling'
+
+reshape:
+    type: 'FlattenNorm'
+
+classifier:
+    type: 'FC'
+    bias: False
+
+scaling:
+    type: 'LearnableWeightScaling'
+#    type: 'Identity'
+
+loss:
+    loss_type: 'LabelAwareSmoothing'
+    LAS:
+        smooth_head: 0.3
+        smooth_tail: 0.0
+        shape: 'concave'
+        power: None
+#    loss_type: 'CrossEntropyCustom'
+
+train:
+    batch_size: 128
+    num_epochs: 10
+    num_workers: 2
+    trainer:
+        type: 'default'
+    optimizer:
+        type: 'SGD'
+        base_lr: 0.1
+        weight_decay: 2e-4
+        momentum: 0.9
+    lr_scheduler:
+        type: 'none'
+    tensorboard:
+        enable: True
+    sampler:
+        type: 'CAS'
+        dual_sampler:
+            enable: False
+
+transforms:
+    train_transforms: ('random_crop', 'random_horizontal_flip', 'normalize')
+    test_transforms: ('normalize',)
+    process_detail:
+        normalize:
+            mean: [0.4914, 0.4822, 0.4465]
+            std: [0.2023, 0.1994, 0.2010]
+
+test:
+    batch_size: 256
+    num_workers: 2
+    model_file: 'best_model.pth'
+

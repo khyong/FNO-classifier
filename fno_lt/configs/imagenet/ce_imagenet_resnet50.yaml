@@ -1,0 +1,70 @@
+name: 'CE.ImageNet.ResNet50.200epoch'
+output_dir: './output/imagenet'
+valid_step: 1
+save_step: -1
+show_step: 100
+input_size: (224, 224)
+color_space: 'RGB'
+cpu_mode: False
+ddp: True
+port: 12355
+seed_num: 0
+
+dataset:
+    root: '/data/anonymous/imagenet'
+    dataset: 'ImageNet1k'
+    num_classes: 1000
+
+backbone:
+    type: 'resnet50_z'
+
+pooling:
+    type: 'GlobalAvgPooling'
+
+reshape:
+    type: 'FlattenCustom'
+
+classifier:
+    type: 'FC'
+    bias: True
+
+scaling:
+    type: 'Identity'
+
+loss:
+    loss_type: 'CrossEntropyCustom'
+
+train:
+    batch_size: 256
+    num_epochs: 90
+    num_workers: 4
+    trainer:
+        type: 'default'
+    optimizer:
+        type: 'SGD'
+        base_lr: 0.1
+        weight_decay: 1e-4
+        momentum: 0.9
+    lr_scheduler:
+        type: 'warmup'
+        warm_epoch: 5
+        lr_step: [30, 60, 80]
+        lr_factor: 0.1
+    tensorboard:
+        enable: True
+
+transforms:
+    train_transforms: ('random_resized_crop', 'random_horizontal_flip', 'normalize')
+    test_transforms: ('resize', 'center_crop', 'normalize',)
+    process_detail:
+        resize: 256
+        crop_size: 224
+        normalize:
+            mean: [0.485, 0.456, 0.406]
+            std: [0.229, 0.224, 0.225]
+
+test:
+    batch_size: 256
+    num_workers: 2
+    model_file: 'best_model.pth'
+

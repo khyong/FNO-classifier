@@ -1,0 +1,7 @@
+tensorboard
+tensorboardX
+click
+opencv-python
+yacs
+matplotlib
+filelock

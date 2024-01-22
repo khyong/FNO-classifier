@@ -1,0 +1,82 @@
+name: 'CE.PlacesLT.ResNet152'
+output_dir: './output/imbalanceplaces'
+valid_step: 1
+save_step: -1
+show_step: 100
+input_size: (224, 224)
+color_space: 'RGB'
+cpu_mode: False
+seed_num: 0
+ddp: False
+dp: True
+mixed_precision: True
+
+dataset:
+    root: '/scratch/slurm-user13-gistirr/dataset/PlacesLT'
+    dataset: 'PlacesLT'
+    type: 'imbalanced'
+    num_classes: 365
+    data_type: 'jpg'
+    train_info: '/scratch/slurm-user13-gistirr/dataset/data_txt/Places_LT_train.txt'
+    valid_info: '/scratch/slurm-user13-gistirr/dataset/data_txt/Places_LT_test.txt'
+    class_index:
+        many: [0, 131]
+        med: [131, 288]
+        few: [288, 365]
+
+backbone:
+    type: 'resnet152_z'
+
+pooling:
+    type: 'GlobalAvgPooling'
+
+reshape:
+    type: 'FlattenCustom'
+
+classifier:
+    type: 'FC'
+    bias: True
+
+scaling:
+    type: 'Identity'
+
+loss:
+    loss_type: 'CrossEntropyCustom'
+
+train:
+    batch_size: 256
+    num_epochs: 90
+    num_workers: 16
+    trainer:
+        type: 'default'
+    optimizer:
+        type: 'SGD'
+        base_lr: 0.1
+        weight_decay: 5e-4
+        momentum: 0.9
+    lr_scheduler:
+        type: 'cosine'
+        eta_min: 0.
+    tensorboard:
+        enable: True
+
+transforms:
+    train_transforms: ('random_resized_crop', 'random_horizontal_flip', 'color_jitter', 'normalize')
+    test_transforms: ('resize', 'center_crop', 'normalize',)
+    process_detail:
+        resize: 256
+        crop_size: 224
+        color_jitter:
+            brightness: 0.4
+            contrast: 0.4
+            saturation: 0.4
+            hue: 0.
+        normalize:
+            mean: [0.466, 0.471, 0.380]
+            std: [0.195, 0.194, 0.192]
+
+test:
+    batch_size: 256
+    num_workers: 16
+    model_file: 'best_model.pth'
+

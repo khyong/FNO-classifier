@@ -1,0 +1,68 @@
+name: 'SphOrth.MNIST.SimpleFNN.100epoch'
+output_dir: './output/mnist'
+valid_step: 1
+save_step: -1
+show_step: 100
+input_size: (28, 28)
+color_space: 'Gray'
+cpu_mode: False
+ddp: True
+port: 12355
+seed_num: 0
+
+dataset:
+    root: '/data/anonymous'
+    dataset: 'MNIST'
+    num_classes: 10
+
+backbone:
+    type: 'SimpleFNN'
+    no_actv: True
+
+pooling:
+    type: 'Identity'
+
+reshape:
+    type: 'Spherization'
+    sph:
+        radius: 1.0
+        scaling: 1.0
+        lrable: (False,False)
+        angle_type: 'sqrt'
+        lowerbound: True
+        lb_decay: True
+
+classifier:
+    type: 'OrthLinear'
+    bias: False
+
+scaling:
+    type: 'Identity'
+
+loss:
+    loss_type: 'LogLoss'
+
+train:
+    batch_size: 256
+    num_epochs: 100
+    num_workers: 2
+    trainer:
+        type: 'default'
+    optimizer:
+        type: 'ADAM'
+        base_lr: 0.001
+        weight_decay: 5e-5
+    lr_scheduler:
+        type: 'none'
+    tensorboard:
+        enable: True
+
+transforms:
+    train_transforms: ()
+    test_transforms: ()
+
+test:
+    batch_size: 256
+    num_workers: 2
+    model_file: 'best_model.pth'
+
