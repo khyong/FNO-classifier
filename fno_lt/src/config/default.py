@@ -69,15 +69,6 @@ _C.pooling.type = "Identity"
 # ----- reshape BUILDER -----
 _C.reshape = CN()
 _C.reshape.type = "Identity"
-_C.reshape.sph = CN()
-_C.reshape.sph.eps = 1e-18
-_C.reshape.sph.radius = 1.0
-_C.reshape.sph.scaling = 5.0
-_C.reshape.sph.delta = 1e-6
-_C.reshape.sph.lrable = (True, False)
-_C.reshape.sph.lowerbound = True
-_C.reshape.sph.angle_type = 'sqrt'
-_C.reshape.sph.lb_decay = False
 
 # ----- classifier BUILDER -----
 _C.classifier = CN()

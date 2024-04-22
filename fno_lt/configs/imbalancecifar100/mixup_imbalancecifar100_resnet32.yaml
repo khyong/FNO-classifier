@@ -1,0 +1,80 @@
+name: 'Mixup.IMBALANCECIFAR100.ResNet32.200epoch'
+output_dir: './output/imbalancecifar100'
+valid_step: 1
+save_step: -1
+show_step: 100
+input_size: (32, 32)
+color_space: 'RGB'
+cpu_mode: False
+ddp: False
+rank: 0
+
+dataset:
+    root: '/home/anonymous/anonymous/data'
+    dataset: 'IMBALANCECIFAR100'
+    num_classes: 100
+    type: 'imbalanced'
+    imbalancecifar:
+        ratio: 0.01
+    class_index:
+        many: [0, 36]
+        med: [36, 71]
+        few: [71, 100]
+
+backbone:
+    type: 'resnetcifar32_z'
+    in_channels: 32
+
+pooling:
+    type: 'GlobalAvgPooling'
+
+reshape:
+    type: 'FlattenCustom'
+
+classifier:
+    type: 'FC'
+    bias: True
+
+scaling:
+    type: 'Identity'
+
+loss:
+    loss_type: 'CrossEntropyCustom'
+
+train:
+    batch_size: 128
+    num_epochs: 200
+    num_workers: 2
+    trainer:
+        type: 'mixup'
+        mixup_alpha: 1.0
+    optimizer:
+        type: 'SGD'
+        base_lr: 0.1
+        weight_decay: 2e-4
+        momentum: 0.9
+    lr_scheduler:
+        type: 'warmup'
+        lr_step: [160, 180]
+        lr_factor: 0.1
+        warm_epoch: 5
+    tensorboard:
+        enable: True
+    sampler:
+        type: 'default'
+        dual_sampler:
+            enable: False
+
+transforms:
+    train_transforms: ('random_crop', 'random_horizontal_flip', 'normalize')
+    test_transforms: ('normalize',)
+    process_detail:
+        normalize:
+            mean: [0.4914, 0.4822, 0.4465]
+            std: [0.2023, 0.1994, 0.2010]
+
+test:
+    batch_size: 256
+    num_workers: 2
+    model_file: 'best_model.pth'
+

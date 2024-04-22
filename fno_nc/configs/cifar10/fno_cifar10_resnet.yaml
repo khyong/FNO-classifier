@@ -1,0 +1,63 @@
+name: 'FNO.CIFAR10.ResNet'
+output_dir: './output/cifar10'
+valid_step: 1
+save_step: -1
+show_step: 100
+input_size: (32, 32)
+color_space: 'RGB'
+
+dataset:
+    root: '/data/anonymous'
+    dataset: 'CIFAR10'
+    num_classes: 10
+
+backbone:
+    type: 'resnets18_z'
+    in_channels: 3
+
+pooling:
+    type: 'GlobalAvgPooling'
+
+reshape:
+    type: 'FlattenCustom'
+
+classifier:
+    type: 'OrthLiear'
+    bias: False
+
+scaling:
+    type: 'Identity'
+
+loss:
+    loss_type: 'CrossEntropyCustom'
+
+train:
+    batch_size: 128
+    num_epochs: 350
+    num_workers: 2
+    trainer:
+        type: 'default'
+    optimizer:
+        type: 'SGD'
+        base_lr: 0.06786
+        weight_decay: 5e-4
+    lr_scheduler:
+        type: 'multistep'
+        lr_factor: 0.1
+        lr_step: [117, 233]
+    tensorboard:
+        enable: True
+
+transforms:
+    train_transforms: ('normalize',)
+    test_transforms: ('normalize',)
+    process_detail:
+        normalize:
+            mean: [0.4914, 0.4822, 0.4465]
+            std: [0.2470, 0.2435, 0.2616]
+
+test:
+    batch_size: 256
+    num_workers: 2
+    model_file: 'best_model.pth'
+

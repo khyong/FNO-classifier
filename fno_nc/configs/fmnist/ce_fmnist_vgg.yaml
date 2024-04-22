@@ -39,7 +39,7 @@ train:
         type: 'default'
     optimizer:
         type: 'SGD'
-        base_lr: 0.0001
+        base_lr: 0.009597
         weight_decay: 5e-4
     lr_scheduler:
         type: 'multistep'
@@ -54,8 +54,8 @@ transforms:
     process_detail:
         resize: 32
         normalize:
-            mean: [0.286,]  # [0.2860,]
-            std: [0.353,]  # [0.3530,]
+            mean: [0.286,]
+            std: [0.353,]
 
 test:
     batch_size: 256

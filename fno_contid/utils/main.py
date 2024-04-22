@@ -74,8 +74,6 @@ def parse_args():
                 model_name = model_name[4:]
             if args.model[-2:] == 'mr':
                 model_name = model_name[:-2]
-            if args.model[-5:] == 'cfsgm':
-                model_name = model_name[:-5]
             best = best_args[args.dataset][model_name]
         if hasattr(mod, 'Buffer'):
             best = best[args.buffer_size]

@@ -12,13 +12,13 @@ dp: True
 mixed_precision: True
 
 dataset:
-    root: '/scratch/slurm-user13-gistirr/dataset/PlacesLT'
+    root: '/scratch/anonymous/dataset/PlacesLT'
     dataset: 'PlacesLT'
     type: 'imbalanced'
     num_classes: 365
     data_type: 'jpg'
-    train_info: '/scratch/slurm-user13-gistirr/dataset/data_txt/Places_LT_train.txt'
-    valid_info: '/scratch/slurm-user13-gistirr/dataset/data_txt/Places_LT_test.txt'
+    train_info: '/scratch/anonymous/dataset/data_txt/Places_LT_train.txt'
+    valid_info: '/scratch/anonymous/dataset/data_txt/Places_LT_test.txt'
     class_index:
         many: [0, 131]
         med: [131, 288]

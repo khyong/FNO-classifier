@@ -224,9 +224,6 @@ def main_worker(rank, world_size, args):
             scheduler.step()
         if cfg.ddp:
             trainsampler.set_epoch(epoch)
-        if cfg.reshape.sph.lb_decay:
-            mm.reshape.lb_decay(epoch, num_epochs)
-            print("**LB Decay** phi_L: {:.4f}".format(mm.reshape.phi_L))
         # train
         train_acc, train_loss = train_model(
             trainloader, model, epoch, num_epochs, optimizer, trainer, 

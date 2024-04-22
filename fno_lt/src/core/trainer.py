@@ -8,6 +8,7 @@ from collections import Counter
 from contextlib import nullcontext
 
 import utils.mixup_utils as mixup_utils
+import utils.etf_utils as etf_utils
 from core.evaluate import accuracy
 
 
@@ -185,79 +186,63 @@ class Trainer:
 
         return loss, acc
 
-    def mask_random(self, model, criterion, data, targets, **kwargs):
+    def etf(self, model, criterion, data, targets, **kwargs):
         data, targets = data.cuda(self.rank), targets.cuda(self.rank)
-        mixed_x, y_a, y_b, lam = mixup_utils.arc_mixup_cls_cbs_data(
-            data, targets, 
-            alpha=self.mixup_alpha, rank=self.rank
-        )
+
+        learned_norm = etf_utils.produce_Ew(targets, self.num_classes)
+
         mm = model.module if self.cfg.ddp else model
+        cur_M = learned_norm * mm.classifier.ori_M.cuda(self.rank)
 
-        flag_mask = True if np.random.rand(1)[0] < 0.5 else False
-
-        if flag_mask:
-            classes_in_batch = torch.unique(targets)
-            feat_indices_in_batch = []
-            feat_indices = mm.classifier.get_feat_indices()
-            for cls_num, feat_idx in enumerate(feat_indices):
-                if cls_num in classes_in_batch:
-                    feat_indices_in_batch.append(feat_idx)
-            feat_indices_in_batch = np.concatenate(feat_indices_in_batch)
+        if 'CIFAR' in self.cfg.dataset.dataset:
+            reg_lam = 0.
+        else:
+            reg_lam = 0.01
 
         with self._with_autocast():
             with self._with_freeze():
-                x = mm.backbone(mixed_x)
-                x = mm.pooling(x)
-                x = mm.reshape(x)   # no normalization
-                if flag_mask:
-                    feat_mask = torch.zeros(x.shape[1]).float()
-                    feat_mask[feat_indices_in_batch] = 1.
-                    feat_mask = feat_mask.unsqueeze(0).cuda(self.rank)
-                    x = feat_mask * x
-                mixed_features = F.normalize(x, dim=1)
-
-            loss = mixup_utils.arc_mixup_cls_cbs_criterion(
-                mm.classifier.base, mixed_features, y_a, y_b, lam)
-
-        with torch.no_grad():
-            output = model(data)
+                features = model(data, feature_flag=True)
+                features = mm.classifier(features)
+            output = torch.matmul(features, cur_M)
+            with torch.no_grad():
+                feat_nograd = features.detach()
+                H_length = torch.clamp(torch.sqrt(torch.sum(feat_nograd ** 2, dim=1, keepdims=False)), 1e-8)
+            loss = etf_utils.dot_loss(features, targets, cur_M, mm.classifier, 'reg_dot_loss', H_length, reg_lam=reg_lam)
+            
         pred = torch.argmax(output, 1)
         acc = accuracy(pred.cpu().numpy(), targets.cpu().numpy())[0]
 
         return loss, acc
 
-    def mask_no_sync(self, model, criterion, data, targets, **kwargs):
+    def etf_m(self, model, criterion, data, targets, **kwargs):
         data, targets = data.cuda(self.rank), targets.cuda(self.rank)
-        mixed_x, y_a, y_b, lam = mixup_utils.arc_mixup_cls_cbs_data(
+        mixed_x, y_a, y_b, lam = mixup_utils.mixup_data(
             data, targets, 
             alpha=self.mixup_alpha, rank=self.rank
         )
 
+        learned_norm = etf_utils.produce_Ew(targets, self.num_classes)
+
         mm = model.module if self.cfg.ddp else model
-        classes_in_batch = torch.unique(targets)
-        feat_indices_in_batch = []
-        feat_indices = mm.classifier.get_feat_indices()
-        for cls_num, feat_idx in enumerate(feat_indices):
-            if cls_num in classes_in_batch:
-                feat_indices_in_batch.append(feat_idx)
-        feat_indices_in_batch = np.concatenate(feat_indices_in_batch)
+        cur_M = learned_norm * mm.classifier.ori_M.cuda(self.rank)
+
+        if 'CIFAR' in self.cfg.dataset.dataset:
+            reg_lam = 0.
+        else:
+            reg_lam = 0.01
 
         with self._with_autocast():
             with self._with_freeze():
-                x = mm.backbone(mixed_x)
-                x = mm.pooling(x)
-                x = mm.reshape(x)   # no normalization
-                feat_mask = torch.zeros(x.shape[1]).float()
-                feat_mask[feat_indices_in_batch] = 1.
-                feat_mask = feat_mask.unsqueeze(0).cuda(self.rank)
-                x = feat_mask * x
-                mixed_features = F.normalize(x, dim=1)
-
-            loss = mixup_utils.arc_mixup_cls_cbs_criterion(
-                mm.classifier.base, mixed_features, y_a, y_b, lam)
-
-        with torch.no_grad():
-            output = model(data)
+                features = model(mixed_x, feature_flag=True)
+                features = mm.classifier(features)
+            output = torch.matmul(features, cur_M)
+            with torch.no_grad():
+                feat_nograd = features.detach()
+                H_length = torch.clamp(torch.sqrt(torch.sum(feat_nograd ** 2, dim=1, keepdims=False)), 1e-8)
+            loss_a = etf_utils.dot_loss(features, y_a, cur_M, mm.classifier, 'reg_dot_loss', H_length, reg_lam=reg_lam)
+            loss_b = etf_utils.dot_loss(features, y_b, cur_M, mm.classifier, 'reg_dot_loss', H_length, reg_lam=reg_lam)
+            loss = lam * loss_a + (1-lam) * loss_b
+            
         pred = torch.argmax(output, 1)
         acc = accuracy(pred.cpu().numpy(), targets.cpu().numpy())[0]
 

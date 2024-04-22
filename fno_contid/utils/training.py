@@ -147,10 +147,7 @@ def train(model: ContinualModel, dataset: ContinualDataset,
                     inputs, labels = inputs.to(model.device), labels.to(
                         model.device)
                     not_aug_inputs = not_aug_inputs.to(model.device)
-                    if 'cfsgm' in args.model:
-                        loss = model.meta_observe(inputs, labels, not_aug_inputs, pre_net=pre_net)
-                    else:
-                        loss = model.meta_observe(inputs, labels, not_aug_inputs)
+                    loss = model.meta_observe(inputs, labels, not_aug_inputs)
                 assert not math.isnan(loss)
                 progress_bar.prog(i, len(train_loader), epoch, t, loss)
 

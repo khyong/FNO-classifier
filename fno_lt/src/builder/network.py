@@ -17,8 +17,6 @@ class Network(nn.Module):
         self.pooling = getattr(modules, cfg.pooling.type)()
         self.reshape = getattr(modules, cfg.reshape.type)(
             cfg, num_features=self.num_features)
-        if 'Sph' in cfg.reshape.type:
-            self.num_features += 1
         self.classifier = self._get_classifier()
         self.scaling = getattr(modules, cfg.scaling.type)(
             self.num_classes)
@@ -64,9 +62,9 @@ class Network(nn.Module):
             ]
             num_features = 512 if self.cfg.backbone.type in basic_list else 2048
             if self.cfg.backbone.type.startswith('resnetcifar32'):
-                if self.cfg.dataset.dataset == 'IMBALANCECIFAR10':
+                if self.cfg.dataset.dataset == 'IMBALANCECIFAR10' or self.cfg.dataset.dataset == 'CIFAR10':
                     num_features = 64
-                elif self.cfg.dataset.dataset == 'IMBALANCECIFAR100':
+                elif self.cfg.dataset.dataset == 'IMBALANCECIFAR100' or self.cfg.dataset.dataset == 'CIFAR100':
                     num_features = 128
         else:
             raise NotImplementedError
