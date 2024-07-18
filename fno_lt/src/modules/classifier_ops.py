@@ -5,12 +5,12 @@ import torch.nn.functional as F
 import numpy as np
 
 __all__ = [
-    'OrthLinear',
+    'FNOClassifier',
     'ETFClassifier',
 ]
 
 
-class OrthLinear(nn.Module):
+class FNOClassifier(nn.Module):
     def __init__(self, num_features, num_classes, *args, **kwargs):
         super().__init__()
         self.num_classes = num_classes
@@ -27,12 +27,6 @@ class OrthLinear(nn.Module):
         base = torch.zeros(num_classes, num_features)
         for i in range(num_classes):
             base[i][feat_indices[i]] = 1
-            if ('cfg' in kwargs) and ('Sph' in kwargs['cfg'].reshape.type):
-                if num_features-1 in feat_indices[i]:
-                    feat_indices[i] = np.delete(
-                        feat_indices[i], np.where(feat_indices[i] == num_features-1))
-        if ('cfg' in kwargs) and ('Sph' in kwargs['cfg'].reshape.type):
-            base[:,-1] = 0.
         base = F.normalize(base, dim=1)
 
         self.feat_indices = feat_indices

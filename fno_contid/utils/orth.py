@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import numpy as np
 
 
-class OrthLinear(nn.Module):
+class FNOClassifier(nn.Module):
     def __init__(self, num_features, num_classes, *args, **kwargs):
         super().__init__()
         self.num_classes = num_classes

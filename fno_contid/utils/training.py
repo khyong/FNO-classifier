@@ -21,7 +21,7 @@ try:
 except ImportError:
     wandb = None
 
-from utils.orth import OrthLinear
+from utils.orth import FNOClassifier
 
 
 def mask_classes(outputs: torch.Tensor, dataset: ContinualDataset, k: int) -> None:
@@ -115,7 +115,7 @@ def train(model: ContinualModel, dataset: ContinualDataset,
         if hasattr(pre_net, 'classifier') and isinstance(pre_net.classifier, torch.nn.Linear):
             in_features = pre_net.classifier.in_features
             out_features = pre_net.classifier.out_features
-            pre_net.classifier = OrthLinear(in_features, out_features)
+            pre_net.classifier = FNOClassifier(in_features, out_features)
     print(file=sys.stderr)
     for t in range(dataset.N_TASKS):
         model.net.train()

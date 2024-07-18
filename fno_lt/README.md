@@ -52,7 +52,7 @@ dataset.type imbalanced \
 dataset.imbalancecifar.ratio {100,50,10} \
 backbone.in_channels 16 \
 reshape.type FlattenNorm \
-classifier.type OrthLinear \
+classifier.type FNOClassifier \
 classifier.bias False \
 loss.loss_type LogLoss \
 train.trainer.mixup_alpha 1.0 \

@@ -33,7 +33,7 @@ from utils.conf import set_random_seed
 from utils.continual_training import train as ctrain
 from utils.distributed import make_dp
 from utils.training import train
-from utils.orth import OrthLinear
+from utils.orth import FNOClassifier
 
 
 def lecun_fix():
@@ -123,7 +123,7 @@ def main(args=None):
         if hasattr(backbone, 'classifier') and isinstance(backbone.classifier, torch.nn.Linear):
             in_features = backbone.classifier.in_features
             out_features = backbone.classifier.out_features
-            backbone.classifier = OrthLinear(in_features, out_features)
+            backbone.classifier = FNOClassifier(in_features, out_features)
         else:
             raise NotImplementedError("No Linear Classifier")
         

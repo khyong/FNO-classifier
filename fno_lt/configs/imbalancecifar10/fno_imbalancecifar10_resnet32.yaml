@@ -33,7 +33,7 @@ reshape:
     type: 'FlattenCustom'
 
 classifier:
-    type: 'OrthLinear'
+    type: 'FNOClassifier'
     bias: False
 
 scaling:
